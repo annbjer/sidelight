@@ -1,0 +1,47 @@
+{
+  "name": "sidelight",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Read-only project-awareness TUI for a terminal split pane \u2014 files, git, search, preview, and optional PI session metadata",
+  "type": "module",
+  "bin": {
+    "sidelight": "dist/src/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "test": "npm run build && node --test \"dist/test/*.test.js\"",
+    "start": "node dist/src/index.js"
+  },
+  "dependencies": {
+    "@mariozechner/pi-tui": "^0.73.1"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.80.3",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  },
+  "license": "MIT",
+  "author": "Daniel Annbjer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/annbjer/sidelight.git"
+  },
+  "homepage": "https://github.com/annbjer/sidelight#readme",
+  "bugs": {
+    "url": "https://github.com/annbjer/sidelight/issues"
+  },
+  "keywords": [
+    "tui",
+    "terminal",
+    "git",
+    "sidecar",
+    "agent",
+    "pi",
+    "local-first",
+    "read-only"
+  ]
+}
