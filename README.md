@@ -4,7 +4,9 @@ Read-only project-awareness TUI for a terminal split pane next to a [PI](https:/
 session. Local-only: no network, no telemetry, the sidecar never writes, and it only ever
 spawns `git`.
 
-## Run (not yet published)
+## Install (from source)
+
+Not on npm yet — for now, clone and build (an `npm install -g sidelight` will come later):
 
 ```sh
 git clone https://github.com/annbjer/sidelight && cd sidelight
