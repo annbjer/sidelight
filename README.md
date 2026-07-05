@@ -5,8 +5,9 @@ session. Local-only: no network, no telemetry, the sidecar never writes, and it 
 spawns `git`.
 
 
-**Why:** AI coding agents are powerful, but you should be able to *see* what they're
-touching without handing yet another tool write access to your code.
+**Why:** full visibility into the project you're working on — and transparency into
+what your AI agent is actually touching — without handing yet another tool write
+access to your code.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/1-hero-dark.png">
