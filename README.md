@@ -9,17 +9,20 @@ spawns `git`.
   <img alt="sidelight running in a Ghostty split beside a PI session: file tree on the left, the agent describing the project on the right" src="assets/1-hero-light.png">
 </picture>
 
-## Install (from source)
+## Install
 
-Not on npm yet — for now, clone and build (an `npm install -g sidelight` will come later):
+```sh
+npm install -g sidelight
+sidelight [dir]   # dir defaults to the current directory
+```
+
+Or from source, if you prefer to read before you run (encouraged):
 
 ```sh
 git clone https://github.com/annbjer/sidelight && cd sidelight
 npm install && npm run build
-node dist/src/index.js [dir]   # dir defaults to the current directory
+node dist/src/index.js [dir]
 ```
-
-Optional: `npm link` to get a global `sidelight` command.
 
 ## Use in Ghostty
 
@@ -30,15 +33,14 @@ Open a split (`cmd+d` right / `cmd+shift+d` down), size it to taste
 
 The `[4] Sessions` tab shows your project's PI sessions live (name, activity, prompts,
 model, cost). It needs the bundled PI extension, which records **sanitized metadata
-only** — never message content. Enable it by adding to `~/.pi/agent/settings.json`:
+only** — never message content. Enable it with:
 
-```json
-{
-  "extensions": ["<path-to-this-repo>/extension/index.ts"]
-}
+```sh
+pi install npm:sidelight
 ```
 
-Or try it once without installing: `pi -e <path-to-this-repo>/extension/index.ts`.
+Or try it once without installing: `pi -e npm:sidelight`. Running from a clone instead?
+Point `~/.pi/agent/settings.json` at it: `"extensions": ["<path-to-repo>/extension/index.ts"]`.
 
 The extension writes one small JSON snapshot per session under
 `~/.local/state/sidelight/sessions/` (or `$XDG_STATE_HOME/sidelight/sessions/`) —
