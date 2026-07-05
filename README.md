@@ -4,6 +4,11 @@ Read-only project-awareness TUI for a terminal split pane next to a [PI](https:/
 session. Local-only: no network, no telemetry, the sidecar never writes, and it only ever
 spawns `git`.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/1-hero-dark.png">
+  <img alt="sidelight running in a Ghostty split beside a PI session: file tree on the left, the agent describing the project on the right" src="assets/1-hero-light.png">
+</picture>
+
 ## Install (from source)
 
 Not on npm yet — for now, clone and build (an `npm install -g sidelight` will come later):
@@ -53,6 +58,37 @@ name you set with `/name`. Nothing else.
 - Search results: `files` section (filename matches) first, then `content` matches, query highlighted
 - `r` — refresh all panels (git status and sessions also auto-refresh via fs watchers)
 - `q` / `Ctrl+C` — quit
+
+
+## A closer look
+
+**Review what your agent changed — diff stats on every file, colored diffs on Enter.**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/2-git-dark.png">
+  <img alt="Git panel diff view with green additions, red removals, and dim hunk headers" src="assets/2-git-light.png">
+</picture>
+
+**Search finds files and content — smart-case, every match highlighted.**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/3-search-dark.png">
+  <img alt="Search results with a files section and highlighted content matches grouped by file" src="assets/3-search-light.png">
+</picture>
+
+**Preview any file or match at its exact line, then Esc back to where you were.**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/3-search-2-dark.png">
+  <img alt="File preview with cursor line and highlighted search matches" src="assets/3-search-2-light.png">
+</picture>
+
+**Know what each agent session touched — and what it cost.**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/4-sessions-dark.png">
+  <img alt="Session detail showing prompts, turns, tool calls, tokens, cost, files touched, and a resume command" src="assets/4-sessions-light.png">
+</picture>
 
 ## Guarantees
 
