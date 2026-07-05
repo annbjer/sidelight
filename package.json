@@ -1,7 +1,7 @@
 {
   "name": "sidelight",
   "version": "0.5.1",
-  "description": "Read-only project-awareness TUI for a terminal split pane — files, git, search, preview, and optional PI session metadata",
+  "description": "Read-only project-awareness TUI for a terminal split pane \u2014 files, git, search, preview, and optional PI session metadata",
   "type": "module",
   "bin": {
     "sidelight": "dist/src/index.js"
@@ -58,5 +58,9 @@
       "./extension"
     ],
     "image": "https://raw.githubusercontent.com/annbjer/sidelight/main/assets/1-hero-dark.png"
+  },
+  "funding": {
+    "type": "ko-fi",
+    "url": "https://ko-fi.com/annbjer"
   }
 }

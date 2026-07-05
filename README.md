@@ -4,12 +4,18 @@ Read-only project-awareness TUI for a terminal split pane next to a [PI](https:/
 session. Local-only: no network, no telemetry, the sidecar never writes, and it only ever
 spawns `git`.
 
+
+**Why:** AI coding agents are powerful, but you should be able to *see* what they're
+touching without handing yet another tool write access to your code.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/1-hero-dark.png">
   <img alt="sidelight running in a Ghostty split beside a PI session: file tree on the left, the agent describing the project on the right" src="assets/1-hero-light.png">
 </picture>
 
 ## Install
+
+From [npm](https://www.npmjs.com/package/sidelight):
 
 ```sh
 npm install -g sidelight
@@ -109,3 +115,8 @@ Sidelight is deliberately restrained: read-only toward your project, no network,
 telemetry, no daemon, no index, content only on explicit keypress. The boundaries are a
 feature — see [PHILOSOPHY.md](./PHILOSOPHY.md) for the guarantees and the list of
 things we will never add.
+
+## Support
+
+Sidelight is free and open source. If it helps your workflow, you can support
+development at [ko-fi.com/annbjer](https://ko-fi.com/annbjer).
