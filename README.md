@@ -78,6 +78,7 @@ name you set with `/name`. Nothing else.
   <img alt="Git panel diff view with green additions, red removals, and dim hunk headers" src="assets/2-git-light.png">
 </picture>
 
+
 **Search finds files and content — smart-case, every match highlighted.**
 
 <picture>
@@ -85,12 +86,14 @@ name you set with `/name`. Nothing else.
   <img alt="Search results with a files section and highlighted content matches grouped by file" src="assets/3-search-light.png">
 </picture>
 
+
 **Preview any file or match at its exact line, then Esc back to where you were.**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/3-search-2-dark.png">
   <img alt="File preview with cursor line and highlighted search matches" src="assets/3-search-2-light.png">
 </picture>
+
 
 **Know what each agent session touched — and what it cost.**
 
