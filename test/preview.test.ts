@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import {
   colorizeDiffLine,
@@ -145,4 +148,24 @@ test("loadDiff refuses denied paths before spawning git", async () => {
     cursorLine: 0,
     breadcrumbKind: "unstaged diff",
   });
+});
+
+test("loadPreview refuses symlinks escaping the project (containment)", async (t) => {
+  const outside = await mkdtemp(join(tmpdir(), "sidelight-outside-"));
+  const project = await mkdtemp(join(tmpdir(), "sidelight-project-"));
+  t.after(async () => {
+    await rm(outside, { recursive: true, force: true });
+    await rm(project, { recursive: true, force: true });
+  });
+
+  await writeFile(join(outside, "secret.txt"), "outside content\n");
+  await writeFile(join(project, "inside.txt"), "inside content\n");
+  await symlink(join(outside, "secret.txt"), join(project, "escape.txt"));
+  await symlink(join(project, "inside.txt"), join(project, "internal-link.txt"));
+
+  const escaped = await loadPreview(project, { path: "escape.txt", targetLine: 1 }, 20);
+  assert.deepEqual(escaped.lines, ["links outside the project — no preview"]);
+
+  const internal = await loadPreview(project, { path: "internal-link.txt", targetLine: 1 }, 20);
+  assert.deepEqual(internal.lines, ["inside content"]);
 });

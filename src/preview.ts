@@ -1,5 +1,5 @@
-import { open, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { open, realpath, stat } from "node:fs/promises";
+import { join, sep } from "node:path";
 import { truncateToWidth } from "@mariozechner/pi-tui";
 import { isDenied } from "./denylist.js";
 import { pathYankPayload } from "./yank.js";
@@ -71,6 +71,20 @@ export async function loadPreview(projectDir: string, request: PreviewRequest, h
 
   try {
     const absolutePath = join(projectDir, path);
+    // Symlink containment: stat/open follow symlinks, so a tracked link
+    // pointing outside the project could otherwise display foreign files
+    // (e.g. a committed "notes.md -> ~/.ssh/id_rsa"). Resolve both ends and
+    // require the real target to live inside the real project directory.
+    const [realProject, realTarget] = await Promise.all([realpath(projectDir), realpath(absolutePath)]);
+    if (realTarget !== realProject && !realTarget.startsWith(realProject + sep)) {
+      return {
+        path,
+        lines: ["links outside the project — no preview"],
+        scrollOffset: 0,
+        cursorLine: 0,
+        highlightQuery: request.highlightQuery,
+      };
+    }
     const info = await stat(absolutePath);
     const bytesToRead = Math.min(info.size, PREVIEW_LIMIT_BYTES);
     const file = await open(absolutePath, "r");
