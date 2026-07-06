@@ -7,7 +7,7 @@ import {
   truncateToWidth,
   type Component,
   type Terminal,
-} from "@mariozechner/pi-tui";
+} from "@earendil-works/pi-tui";
 import { existsSync, watch, type FSWatcher } from "node:fs";
 import { basename, join } from "node:path";
 import { FilesPanel } from "./panels/files.js";

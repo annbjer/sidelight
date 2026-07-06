@@ -1,6 +1,6 @@
 {
   "name": "sidelight",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Read-only project-awareness TUI for a terminal split pane — files, git, search, preview, and optional PI session metadata",
   "type": "module",
   "bin": {
@@ -16,9 +16,6 @@
     "start": "node dist/src/index.js",
     "prepack": "npm run build",
     "prepublishOnly": "npm run check && npm test"
-  },
-  "dependencies": {
-    "@mariozechner/pi-tui": "^0.73.1"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "^0.80.3",
@@ -62,5 +59,8 @@
   "funding": {
     "type": "ko-fi",
     "url": "https://ko-fi.com/annbjer"
+  },
+  "dependencies": {
+    "@earendil-works/pi-tui": "^0.80.3"
   }
 }

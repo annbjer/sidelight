@@ -1,4 +1,4 @@
-import { decodeKittyPrintable, matchesKey, parseKey, truncateToWidth, type Component } from "@mariozechner/pi-tui";
+import { decodeKittyPrintable, matchesKey, parseKey, truncateToWidth, type Component } from "@earendil-works/pi-tui";
 import { isGitRepo, listTrackedFiles, searchTracked, type GitSearchResult, type SearchMatch } from "../git.js";
 import { highlightRow } from "../highlight.js";
 import { jumpIndex } from "../navigation.js";

@@ -1,6 +1,6 @@
 import { open, realpath, stat } from "node:fs/promises";
 import { join, sep } from "node:path";
-import { truncateToWidth } from "@mariozechner/pi-tui";
+import { truncateToWidth } from "@earendil-works/pi-tui";
 import { isDenied } from "./denylist.js";
 import { pathYankPayload } from "./yank.js";
 import { execGit } from "./git.js";

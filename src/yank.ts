@@ -1,4 +1,4 @@
-import type { Terminal } from "@mariozechner/pi-tui";
+import type { Terminal } from "@earendil-works/pi-tui";
 import { isDenied } from "./denylist.js";
 
 // Defense in depth (same discipline as loadPreview): no panel can place the

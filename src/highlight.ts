@@ -1,4 +1,4 @@
-import { truncateToWidth } from "@mariozechner/pi-tui";
+import { truncateToWidth } from "@earendil-works/pi-tui";
 
 export const INVERSE_ON = "\x1b[7m";
 export const INVERSE_OFF = "\x1b[27m";

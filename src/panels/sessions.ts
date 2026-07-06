@@ -1,4 +1,4 @@
-import { matchesKey, truncateToWidth, type Component } from "@mariozechner/pi-tui";
+import { matchesKey, truncateToWidth, type Component } from "@earendil-works/pi-tui";
 import { highlightRow } from "../highlight.js";
 import { jumpIndex } from "../navigation.js";
 import type { Panel, PanelKey } from "../app.js";

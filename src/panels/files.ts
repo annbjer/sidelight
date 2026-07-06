@@ -1,4 +1,4 @@
-import { matchesKey, truncateToWidth, type Component } from "@mariozechner/pi-tui";
+import { matchesKey, truncateToWidth, type Component } from "@earendil-works/pi-tui";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { isDenied } from "../denylist.js";

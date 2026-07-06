@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { visibleWidth } from "@mariozechner/pi-tui";
+import { visibleWidth } from "@earendil-works/pi-tui";
 import { highlightRow, matchHighlightStyle } from "../src/highlight.js";
 
 test("highlightRow wraps exact-width plain text in inverse video", () => {
