@@ -48,8 +48,10 @@
   "files": [
     "dist/src",
     "dist/extension",
+    "dist/adapters",
     "src",
     "extension",
+    "adapters",
     "PHILOSOPHY.md"
   ],
   "pi": {
