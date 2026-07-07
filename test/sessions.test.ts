@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { stateDirFor } from "../extension/state-dir.js";
+import { stateDirFor } from "../adapters/core/state-dir.js";
 import {
   loadSnapshots,
   sessionRowLabel,
@@ -32,6 +32,21 @@ test("sessionRowLabel renders ended sessions with session id fallback", () => {
   );
 
   assert.deepEqual(label.parts, ["○ abcdef12", "1m ago", "1 prompt", "sonnet-4", "$0.04"]);
+});
+
+test("sessionRowLabel appends explicit non-PI agent labels only", () => {
+  assert.deepEqual(
+    sessionRowLabel(snapshot({ agent: "claude-code" }), 1_000_000).parts,
+    ["● Session name", "now", "3 prompts", "sonnet-4", "$0.04", "claude-code"],
+  );
+  assert.deepEqual(
+    sessionRowLabel(snapshot({ agent: "pi" }), 1_000_000).parts,
+    ["● Session name", "now", "3 prompts", "sonnet-4", "$0.04"],
+  );
+  assert.deepEqual(
+    sessionRowLabel(snapshot(), 1_000_000).parts,
+    ["● Session name", "now", "3 prompts", "sonnet-4", "$0.04"],
+  );
 });
 
 test("sessionRowLabel formats relative ages", () => {
@@ -80,6 +95,41 @@ test("loadSnapshots reads valid rows, skips malformed JSON, ignores dir.json, an
   assert.equal(rows.length, 3);
 });
 
+test("loadSnapshots reads optional agent tolerantly", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "sidelight-sessions-agent-"));
+  t.after(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  await writeFile(
+    join(dir, "claude.json"),
+    JSON.stringify(snapshot({ sessionId: "claude", agent: "claude-code", lastActivityAt: 3000 })),
+    "utf8",
+  );
+  await writeFile(
+    join(dir, "legacy.json"),
+    JSON.stringify(snapshot({ sessionId: "legacy", agent: undefined, lastActivityAt: 2000 })),
+    "utf8",
+  );
+  await writeFile(
+    join(dir, "unknown.json"),
+    JSON.stringify({ ...snapshot({ sessionId: "unknown", lastActivityAt: 1000 }), agent: "other" }),
+    "utf8",
+  );
+
+  const rows = await loadSnapshots(dir);
+
+  const snapshots = rows.filter((row) => row.kind === "snapshot").map((row) => row.snapshot);
+  assert.deepEqual(
+    snapshots.map((row) => [row.sessionId, row.agent]),
+    [
+      ["claude", "claude-code"],
+      ["legacy", undefined],
+      ["unknown", undefined],
+    ],
+  );
+});
+
 test("loadSnapshots returns an empty list for a missing directory", async () => {
   assert.deepEqual(await loadSnapshots(join(tmpdir(), "sidelight-missing-sessions-dir")), []);
 });
@@ -104,6 +154,15 @@ test("detailLines appends resume hint for ended sessions only", () => {
 
   assert.equal(ended.at(-1), "resume: pi --session session-1234567890");
   assert.equal(active.includes("resume: pi --session session-1234567890"), false);
+});
+
+test("detailLines renders the display agent after schema version", () => {
+  const claude = detailLines({ kind: "snapshot", path: "/tmp/session.json", snapshot: snapshot({ agent: "claude-code" }) });
+  const legacy = detailLines({ kind: "snapshot", path: "/tmp/session.json", snapshot: snapshot() });
+
+  assert.equal(claude[1], "v: 1");
+  assert.equal(claude[2], "agent: claude-code");
+  assert.equal(legacy[2], "agent: pi");
 });
 
 function snapshot(overrides: Partial<SessionSnapshotView> = {}): SessionSnapshotView {

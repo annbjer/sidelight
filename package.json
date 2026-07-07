@@ -1,10 +1,12 @@
 {
   "name": "sidelight",
-  "version": "0.5.3",
-  "description": "Read-only project-awareness TUI for a terminal split pane — files, git, search, preview, and optional PI session metadata",
+  "version": "0.6.0",
+  "description": "Read-only project-awareness TUI for a terminal split pane \u2014 files, git, search, preview, and optional PI session metadata",
   "type": "module",
   "bin": {
-    "sidelight": "dist/src/index.js"
+    "sidelight": "dist/src/index.js",
+    "sidelight-claude-code-hook": "dist/adapters/claude-code/index.js",
+    "sidelight-codex-hook": "dist/adapters/codex/index.js"
   },
   "engines": {
     "node": ">=20"

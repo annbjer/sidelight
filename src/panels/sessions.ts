@@ -4,6 +4,7 @@ import { jumpIndex } from "../navigation.js";
 import type { Panel, PanelKey } from "../app.js";
 import {
   formatCost,
+  agentForDisplay,
   loadSnapshots,
   sessionRowLabel,
   stateDirForProjectDir,
@@ -55,7 +56,7 @@ export class SessionsPanel implements Panel, Component {
     }
 
     if (this.rows.length === 0) {
-      return [truncateToWidth("no PI session metadata — see README to enable the extension", width)];
+      return [truncateToWidth("no session metadata — see README to enable the extension", width)];
     }
 
     this.clampWindow(this.rows.length);
@@ -241,6 +242,7 @@ export function detailLines(row: SessionRow): string[] {
   const lines = [
     snapshot.sessionId,
     `v: ${snapshot.v}`,
+    `agent: ${agentForDisplay(snapshot)}`,
     `cwd: ${snapshot.cwd}`,
     `name: ${snapshot.name ?? "null"}`,
     `model: ${snapshot.model ?? "null"}`,

@@ -8,8 +8,8 @@ import {
   applyToolCall,
   applyTurnEnd,
   createSnapshot,
-} from "../extension/snapshot.js";
-import { cwdHash, stateDirFor } from "../extension/state-dir.js";
+} from "../adapters/core/snapshot.js";
+import { cwdHash, stateDirFor } from "../adapters/core/state-dir.js";
 
 const cwd = "/tmp/project";
 
@@ -29,6 +29,11 @@ test("createSnapshot creates the v1 schema", () => {
     tokens: { input: 0, output: 0 },
     cost: 0,
   });
+});
+
+test("createSnapshot stores an explicit agent only when supplied", () => {
+  assert.equal(createSnapshot("session-1", cwd, "startup", 1000).agent, undefined);
+  assert.equal(createSnapshot("session-1", cwd, "startup", 1000, "claude-code").agent, "claude-code");
 });
 
 test("applyNameChange stores only a string session label", () => {

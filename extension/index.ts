@@ -9,9 +9,8 @@ import {
   applyTurnEnd,
   createSnapshot,
   type SessionSnapshot,
-  type StartReason,
-} from "./snapshot.js";
-import { SnapshotWriter } from "./state-dir.js";
+} from "../adapters/core/snapshot.js";
+import { SnapshotWriter } from "../adapters/core/state-dir.js";
 
 export default function (pi: ExtensionAPI): void {
   let snapshot: SessionSnapshot | null = null;
@@ -20,7 +19,7 @@ export default function (pi: ExtensionAPI): void {
   pi.on("session_start", async (event, ctx) => {
     await guard(async () => {
       const cwd = realpathSync(ctx.sessionManager.getCwd() ?? process.cwd());
-      snapshot = createSnapshot(sessionIdFrom(ctx), cwd, event.reason, Date.now());
+      snapshot = createSnapshot(sessionIdFrom(ctx), cwd, event.reason, Date.now(), "pi");
       // name/model events only fire on changes; seed initial values from context.
       const initialName = ctx.sessionManager.getSessionName();
       if (initialName !== undefined) {

@@ -1,10 +1,13 @@
 import { realpathSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { stateDirFor } from "../extension/state-dir.js";
+import { stateDirFor } from "../adapters/core/state-dir.js";
+
+export type SnapshotAgent = "pi" | "claude-code" | "codex";
 
 export interface SessionSnapshotView {
   v: 1;
+  agent?: SnapshotAgent;
   sessionId: string;
   cwd: string;
   name: string | null;
@@ -37,6 +40,7 @@ export interface SessionRowLabel {
   prompts: string;
   model: string;
   cost: string;
+  agent: SnapshotAgent;
   parts: string[];
   text: string;
 }
@@ -96,8 +100,12 @@ export function sessionRowLabel(snapshot: SessionSnapshotView, nowMs: number): S
   const prompts = `${snapshot.counts.prompts} ${snapshot.counts.prompts === 1 ? "prompt" : "prompts"}`;
   const model = shortModel(snapshot.model);
   const cost = formatCost(snapshot.cost);
+  const agent = agentForDisplay(snapshot);
   const agePart = age === "now" ? "now" : `${age} ago`;
   const parts = [`${marker} ${displayName}`, agePart, prompts, model, cost];
+  if (snapshot.agent !== undefined && snapshot.agent !== "pi") {
+    parts.push(snapshot.agent);
+  }
   return {
     marker,
     displayName,
@@ -105,6 +113,7 @@ export function sessionRowLabel(snapshot: SessionSnapshotView, nowMs: number): S
     prompts,
     model,
     cost,
+    agent,
     parts,
     text: parts.join(" · "),
   };
@@ -123,6 +132,7 @@ function parseV1Snapshot(value: Record<string, unknown>): SessionSnapshotView | 
   const filesTouched = parseStringArray(value.filesTouched);
   const tokens = parseTokens(value.tokens);
   const cost = readFiniteNumber(value.cost);
+  const agent = readAgent(value.agent);
 
   if (
     sessionId === null ||
@@ -143,6 +153,7 @@ function parseV1Snapshot(value: Record<string, unknown>): SessionSnapshotView | 
 
   return {
     v: 1,
+    ...(agent === undefined ? {} : { agent }),
     sessionId,
     cwd,
     name,
@@ -156,6 +167,14 @@ function parseV1Snapshot(value: Record<string, unknown>): SessionSnapshotView | 
     tokens,
     cost,
   };
+}
+
+export function agentForDisplay(snapshot: SessionSnapshotView): SnapshotAgent {
+  return snapshot.agent ?? "pi";
+}
+
+function readAgent(value: unknown): SnapshotAgent | undefined {
+  return value === "pi" || value === "claude-code" || value === "codex" ? value : undefined;
 }
 
 function parseCounts(value: unknown): SessionSnapshotView["counts"] | null {

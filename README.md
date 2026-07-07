@@ -1,8 +1,8 @@
 # sidelight
 
-Read-only project-awareness TUI for a terminal split pane next to a [PI](https://pi.dev)
-session. Local-only: no network, no telemetry, the sidecar never writes, and it only ever
-spawns `git`.
+Read-only project-awareness TUI for a terminal split pane beside your AI coding agent —
+[PI](https://pi.dev), Claude Code, or Codex. Local-only: no network, no telemetry, the
+sidecar never writes, and it only ever spawns `git`.
 
 
 **Why:** full visibility into the project you're working on — and transparency into
@@ -54,6 +54,33 @@ The extension writes one small JSON snapshot per session under
 open one with `cat` to see exactly what is recorded: timestamps, counts, tool-call
 counts, deny-list-filtered file paths, token totals, cost, the model id, and the session
 name you set with `/name`. Nothing else.
+
+## Other agents: Claude Code and Codex (v0.6)
+
+The same Sessions tab works beside Claude Code and Codex through their hooks systems.
+Each adapter is a tiny program that ships with sidelight, runs for milliseconds per
+event, and records the same sanitized metadata — never message content, never command
+strings. Setup is one paste:
+
+**Claude Code** — print the snippet and merge it into `~/.claude/settings.json`:
+
+```sh
+sidelight-claude-code-hook --print-config
+```
+
+**Codex** — print the snippet and merge it into `~/.codex/config.toml`:
+
+```sh
+sidelight-codex-hook --print-config
+```
+
+Codex asks you to trust the hooks on first interactive run (non-interactive
+`codex exec` needs `--dangerously-bypass-hook-trust`).
+
+Honest limitations, by design: `tokens`/`cost` stay at 0 for both (their hooks don't
+expose usage, and sidelight never parses message-bearing transcripts); Codex mostly runs
+files through shell commands, so its `filesTouched` stays sparse (command strings are
+never read); Codex has no session-end event, so its sessions display as active.
 
 ## Keys
 
@@ -108,8 +135,9 @@ name you set with `/name`. Nothing else.
   built-in deny-list (`.env*`, `*.pem`, `*.key`, `*_rsa*`, `node_modules`, `.git`)
   applied to every surface: file tree, search results, git status, previews.
 - The sidecar is read-only: never modifies, writes, or indexes anything.
-- The PI extension writes only its own state dir, only allowlisted metadata fields,
-  and never message bodies, prompts, or command strings.
+- The session recorders (PI extension, Claude Code and Codex hook adapters) write only
+  their own state dir, only allowlisted metadata fields, and never message bodies,
+  prompts, or command strings.
 - Works degraded outside git repos (deny-listed file browser; search disabled) and
   without the extension (Sessions tab shows how to enable it).
 
