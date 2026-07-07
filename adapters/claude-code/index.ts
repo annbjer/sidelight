@@ -8,7 +8,14 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import {
+  confirmAndWrite,
+  computeJsonMerge,
+  computeJsonRemoval,
+  type JsonInstallEntries,
+} from "../core/install.js";
 import {
   applyAgentStart,
   applyShutdown,
@@ -30,6 +37,7 @@ const KNOWN_EVENTS = new Set([
 const LOCK_RETRIES = 10;
 const LOCK_RETRY_MS = 25;
 const STALE_LOCK_MS = 2_000;
+const BIN_FILENAME = "sidelight-claude-code-hook";
 
 /*
  * Sanitization rules:
@@ -217,26 +225,34 @@ function sanitizeSessionId(sessionId: string): string {
 }
 
 function printConfig(): void {
-  const command = resolvedScriptPath();
-  const hook = { type: "command", command, async: true };
-  const config = {
-    hooks: {
-      SessionStart: [{ hooks: [hook] }],
-      UserPromptSubmit: [{ hooks: [hook] }],
-      PreToolUse: [{ matcher: "*", hooks: [hook] }],
-      Stop: [{ hooks: [hook] }],
-      SessionEnd: [{ hooks: [hook] }],
-    },
-  };
+  const config = claudeSettingsConfig(resolvedScriptPath()).config;
 
   process.stdout.write("// Merge this JSON into your existing ~/.claude/settings.json hooks.\n");
   process.stdout.write(`${JSON.stringify(config, null, 2)}\n`);
 }
 
+function claudeSettingsConfig(command: string): JsonInstallEntries {
+  const hook = { type: "command", command, async: true };
+  return {
+    binFilename: BIN_FILENAME,
+    config: {
+      hooks: {
+        SessionStart: [{ hooks: [hook] }],
+        UserPromptSubmit: [{ hooks: [hook] }],
+        PreToolUse: [{ matcher: "*", hooks: [hook] }],
+        Stop: [{ hooks: [hook] }],
+        SessionEnd: [{ hooks: [hook] }],
+      },
+    },
+  };
+}
+
 function printHelp(): void {
   process.stdout.write(
-    "Usage: sidelight-claude-code-hook [--print-config|--help]. Without flags, reads one Claude Code hook JSON object from stdin, updates Sidelight's local session snapshot, and exits silently on invalid input.\n",
+    "Usage: sidelight-claude-code-hook [--print-config|--install|--uninstall|--help]. Without flags, reads one Claude Code hook JSON object from stdin, updates Sidelight's local session snapshot, and exits silently on invalid input.\n",
   );
+  process.stdout.write("  --install       Print the settings diff, then apply it only after interactive confirmation.\n");
+  process.stdout.write("  --uninstall     Print the settings diff for removing Sidelight hooks, then apply it only after interactive confirmation.\n");
 }
 
 async function readStdin(): Promise<string> {
@@ -251,6 +267,14 @@ async function main(): Promise<void> {
   const arg = process.argv[2];
   if (arg === "--print-config") {
     printConfig();
+    return;
+  }
+  if (arg === "--install") {
+    await installClaudeSettings();
+    return;
+  }
+  if (arg === "--uninstall") {
+    await uninstallClaudeSettings();
     return;
   }
   if (arg === "--help" || arg === "-h") {
@@ -269,6 +293,49 @@ async function main(): Promise<void> {
   }
 
   processHookPayload(payload);
+}
+
+async function installClaudeSettings(): Promise<void> {
+  const configPath = path.join(homeDir(), ".claude", "settings.json");
+  const before = readOptionalFile(configPath);
+  const result = computeJsonMerge(before, claudeSettingsConfig(resolvedScriptPath()));
+  if (!result.ok) {
+    process.stderr.write(`${result.message}\n`);
+    process.exit(1);
+  }
+  if (!result.changed) {
+    process.stdout.write("no changes made\n");
+    return;
+  }
+  await confirmAndWrite(configPath, before, result.merged);
+}
+
+async function uninstallClaudeSettings(): Promise<void> {
+  const configPath = path.join(homeDir(), ".claude", "settings.json");
+  const before = readOptionalFile(configPath);
+  const result = computeJsonRemoval(before, BIN_FILENAME);
+  if (!result.ok) {
+    process.stderr.write(`${result.message}\n`);
+    process.exit(1);
+  }
+  if (!result.changed) {
+    process.stdout.write("no changes made\n");
+    return;
+  }
+  await confirmAndWrite(configPath, before, result.merged);
+}
+
+function readOptionalFile(filePath: string): string | null {
+  try {
+    return readFileSync(filePath, "utf8");
+  } catch (error) {
+    if (isNodeError(error) && error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function homeDir(): string {
+  return process.env.HOME ?? os.homedir();
 }
 
 function resolvedScriptPath(): string {
@@ -318,7 +385,13 @@ function isNodeError(error: unknown): error is NodeJS.ErrnoException {
 }
 
 if (isMain()) {
-  main().catch(() => {
+  main().catch((error: unknown) => {
+    if (process.argv[2] === "--install" || process.argv[2] === "--uninstall") {
+      const message = error instanceof Error ? error.message : "unknown error";
+      process.stderr.write(`${message}\n`);
+      process.exitCode = 1;
+      return;
+    }
     // Hooks must never disturb Claude Code sessions.
   });
 }

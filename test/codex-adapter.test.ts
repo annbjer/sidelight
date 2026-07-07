@@ -76,14 +76,16 @@ test("--print-config prints Codex config.toml hooks for supported events", async
   assert.match(result.stdout, /command = ".+\/adapters\/codex\/index\.js"/);
 });
 
-test("--help describes Codex hook usage in one paragraph", async () => {
+test("--help describes Codex hook usage and install flags", async () => {
   const bin = join(dirname(fileURLToPath(import.meta.url)), "..", "adapters", "codex", "index.js");
   const child = spawn(process.execPath, [bin, "--help"], { stdio: ["ignore", "pipe", "pipe"] });
   const result = await collect(child);
 
   assert.equal(result.code, 0);
   assert.equal(result.stderr, "");
-  assert.match(result.stdout, /^Usage: sidelight-codex-hook \[--print-config\|--help\]\./);
+  assert.match(result.stdout, /^Usage: sidelight-codex-hook \[--print-config\|--install\|--uninstall\|--help\]\./);
+  assert.match(result.stdout, /--install\s+Print the config diff/);
+  assert.match(result.stdout, /--uninstall\s+Print the config diff/);
 });
 
 async function fixture(name: string): Promise<Record<string, unknown>> {

@@ -60,19 +60,24 @@ name you set with `/name`. Nothing else.
 The same Sessions tab works beside Claude Code and Codex through their hooks systems.
 Each adapter is a tiny program that ships with sidelight, runs for milliseconds per
 event, and records the same sanitized metadata — never message content, never command
-strings. Setup is one paste:
+strings. Setup is one command:
 
-**Claude Code** — print the snippet and merge it into `~/.claude/settings.json`:
-
-```sh
-sidelight-claude-code-hook --print-config
-```
-
-**Codex** — print the snippet and merge it into `~/.codex/config.toml`:
+**Claude Code:**
 
 ```sh
-sidelight-codex-hook --print-config
+sidelight-claude-code-hook --install
 ```
+
+**Codex:**
+
+```sh
+sidelight-codex-hook --install
+```
+
+Each shows you the exact change to your agent's config, makes a timestamped backup, and
+asks before writing — nothing happens without your explicit yes. `--uninstall` reverses
+it just as cleanly, and `--print-config` prints the snippet if you prefer to merge by
+hand.
 
 Codex asks you to trust the hooks on first interactive run (non-interactive
 `codex exec` needs `--dangerously-bypass-hook-trust`).

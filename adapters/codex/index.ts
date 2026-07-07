@@ -8,7 +8,13 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import {
+  confirmAndWrite,
+  computeTomlAppend,
+  computeTomlRemoval,
+} from "../core/install.js";
 import {
   applyAgentStart,
   applyToolCall,
@@ -218,23 +224,30 @@ function sanitizeSessionId(sessionId: string): string {
 }
 
 function printConfig(): void {
-  const command = resolvedScriptPath();
-  const hook = `{ type = "command", command = ${JSON.stringify(command)} }`;
-
   process.stdout.write("# Merge this [hooks] table into your existing ~/.codex/config.toml.\n");
   process.stdout.write("# Codex will ask you to trust these hooks on first interactive run; codex exec needs --dangerously-bypass-hook-trust.\n");
-  process.stdout.write("[hooks]\n");
-  process.stdout.write(`SessionStart = [{ hooks = [${hook}] }]\n`);
-  process.stdout.write(`UserPromptSubmit = [{ hooks = [${hook}] }]\n`);
-  process.stdout.write(`PreToolUse = [{ matcher = "*", hooks = [${hook}] }]\n`);
-  process.stdout.write(`PostToolUse = [{ matcher = "*", hooks = [${hook}] }]\n`);
-  process.stdout.write(`Stop = [{ hooks = [${hook}] }]\n`);
+  process.stdout.write(codexHooksBlock(resolvedScriptPath()));
+}
+
+function codexHooksBlock(command: string): string {
+  const hook = `{ type = "command", command = ${JSON.stringify(command)} }`;
+  return [
+    "[hooks]",
+    `SessionStart = [{ hooks = [${hook}] }]`,
+    `UserPromptSubmit = [{ hooks = [${hook}] }]`,
+    `PreToolUse = [{ matcher = "*", hooks = [${hook}] }]`,
+    `PostToolUse = [{ matcher = "*", hooks = [${hook}] }]`,
+    `Stop = [{ hooks = [${hook}] }]`,
+    "",
+  ].join("\n");
 }
 
 function printHelp(): void {
   process.stdout.write(
-    "Usage: sidelight-codex-hook [--print-config|--help]. Without flags, reads one Codex hook JSON object from stdin, updates Sidelight's local session snapshot, and exits silently on invalid input.\n",
+    "Usage: sidelight-codex-hook [--print-config|--install|--uninstall|--help]. Without flags, reads one Codex hook JSON object from stdin, updates Sidelight's local session snapshot, and exits silently on invalid input.\n",
   );
+  process.stdout.write("  --install       Print the config diff, then apply it only after interactive confirmation.\n");
+  process.stdout.write("  --uninstall     Print the config diff for removing Sidelight hooks, then apply it only after interactive confirmation.\n");
 }
 
 async function readStdin(): Promise<string> {
@@ -249,6 +262,14 @@ async function main(): Promise<void> {
   const arg = process.argv[2];
   if (arg === "--print-config") {
     printConfig();
+    return;
+  }
+  if (arg === "--install") {
+    await installCodexConfig();
+    return;
+  }
+  if (arg === "--uninstall") {
+    await uninstallCodexConfig();
     return;
   }
   if (arg === "--help" || arg === "-h") {
@@ -267,6 +288,53 @@ async function main(): Promise<void> {
   }
 
   processHookPayload(payload);
+}
+
+async function installCodexConfig(): Promise<void> {
+  const configPath = path.join(homeDir(), ".codex", "config.toml");
+  const before = readOptionalFile(configPath);
+  const block = codexHooksBlock(resolvedScriptPath());
+  const result = computeTomlAppend(before, block);
+  if (!result.ok) {
+    printManualTomlInstructions(configPath, block, "existing [hooks] table found");
+    process.exit(1);
+  }
+  if (!result.changed) {
+    process.stdout.write("no changes made\n");
+    return;
+  }
+  await confirmAndWrite(configPath, before, result.merged);
+}
+
+async function uninstallCodexConfig(): Promise<void> {
+  const configPath = path.join(homeDir(), ".codex", "config.toml");
+  const before = readOptionalFile(configPath);
+  const block = codexHooksBlock(resolvedScriptPath());
+  const result = computeTomlRemoval(before, block);
+  if (!result.ok) {
+    printManualTomlInstructions(configPath, block, "Sidelight hook block was not found verbatim");
+    process.exit(1);
+  }
+  await confirmAndWrite(configPath, before, result.merged);
+}
+
+function printManualTomlInstructions(configPath: string, block: string, reason: string): void {
+  process.stdout.write(`${reason}; sidelight does not parse TOML, so it will not write ${configPath} automatically.\n`);
+  process.stdout.write("Manually add or remove this block, preserving any other Codex hooks:\n");
+  process.stdout.write(block);
+}
+
+function readOptionalFile(filePath: string): string | null {
+  try {
+    return readFileSync(filePath, "utf8");
+  } catch (error) {
+    if (isNodeError(error) && error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function homeDir(): string {
+  return process.env.HOME ?? os.homedir();
 }
 
 function resolvedScriptPath(): string {
@@ -316,7 +384,13 @@ function isNodeError(error: unknown): error is NodeJS.ErrnoException {
 }
 
 if (isMain()) {
-  main().catch(() => {
+  main().catch((error: unknown) => {
+    if (process.argv[2] === "--install" || process.argv[2] === "--uninstall") {
+      const message = error instanceof Error ? error.message : "unknown error";
+      process.stderr.write(`${message}\n`);
+      process.exitCode = 1;
+      return;
+    }
     // Hooks must never disturb Codex sessions.
   });
 }
