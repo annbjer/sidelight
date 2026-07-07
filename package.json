@@ -9,7 +9,7 @@
     "sidelight-codex-hook": "dist/adapters/codex/index.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.19.0"
   },
   "scripts": {
     "build": "tsc",

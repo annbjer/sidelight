@@ -24,9 +24,10 @@ the point, so they are stated here as commitments, not defaults.
 - **The PI extension records metadata through a fixed allowlist** — session name, model,
   timestamps, counts, token totals, deny-list-filtered file paths. It structurally cannot
   record your prompts, replies, tool outputs, or command strings, because it never reads
-  those fields at all. Its snapshots are plain JSON files you can `cat`. It is the only
-  component that writes anything, it writes only in its own state directory, and it is
-  optional.
+  those fields at all. Its snapshots are plain JSON files you can `cat`. The session
+  recorders (the PI extension and the Claude Code / Codex hook adapters) are the only
+  components that write anything; they write only in their own state directory, and every
+  one of them is optional.
 - **Small enough to read.** A few thousand lines, three runtime concepts, one small TUI
   dependency plus the Node standard library. Reading the whole thing in an afternoon is a
   supported use case — arguably the most important one.

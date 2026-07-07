@@ -236,7 +236,6 @@ function codexHooksBlock(command: string): string {
     `SessionStart = [{ hooks = [${hook}] }]`,
     `UserPromptSubmit = [{ hooks = [${hook}] }]`,
     `PreToolUse = [{ matcher = "*", hooks = [${hook}] }]`,
-    `PostToolUse = [{ matcher = "*", hooks = [${hook}] }]`,
     `Stop = [{ hooks = [${hook}] }]`,
     "",
   ].join("\n");
