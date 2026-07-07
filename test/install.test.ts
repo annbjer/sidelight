@@ -206,3 +206,12 @@ function codexBlock(): string {
 function json(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
+
+test("renderDiff folds unchanged lines and shows only real changes on insertion", () => {
+  const before = ["{", '  "a": 1,', '  "b": 2,', '  "c": 3,', '  "d": 4,', '  "e": 5,', '  "f": 6,', '  "g": 7', "}"].join("\n");
+  const after = ["{", '  "a": 1,', '  "b": 2,', '  "hooks": {},', '  "c": 3,', '  "d": 4,', '  "e": 5,', '  "f": 6,', '  "g": 7', "}"].join("\n");
+  const diff = renderDiff(before, after, "/tmp/x.json");
+  assert.match(diff, /\+ {2}"hooks": \{\},/);
+  assert.doesNotMatch(diff, /-\s+"c": 3/);
+  assert.match(diff, /unchanged line/);
+});

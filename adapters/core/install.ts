@@ -98,25 +98,73 @@ export function computeJsonRemoval(existingText: string | null, binFilename: str
 export function renderDiff(before: string | null, after: string, configPath: string): string {
   const beforeLines = splitLines(before ?? "");
   const afterLines = splitLines(after);
-  const out = [
+  const header = [
     `--- ${configPath}${before === null ? " (missing)" : ""}`,
     `+++ ${configPath}`,
   ];
-  const max = Math.max(beforeLines.length, afterLines.length);
 
-  for (let i = 0; i < max; i += 1) {
-    const oldLine = beforeLines[i];
-    const newLine = afterLines[i];
-    if (oldLine === newLine && oldLine !== undefined) {
-      out.push(` ${oldLine}`);
-      continue;
-    }
-    if (oldLine !== undefined) out.push(`-${oldLine}`);
-    if (newLine !== undefined) out.push(`+${newLine}`);
+  if (before === null) {
+    return `${[...header, ...afterLines.map((l) => `+${l}`)].join("\n")}\n`;
   }
 
+  // LCS alignment so insertions don't cascade into false churn; config files
+  // are small, so the quadratic table is fine.
+  const n = beforeLines.length;
+  const m = afterLines.length;
+  const lcs: number[][] = Array.from({ length: n + 1 }, () => new Array<number>(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i -= 1) {
+    for (let j = m - 1; j >= 0; j -= 1) {
+      lcs[i]![j] = beforeLines[i] === afterLines[j]
+        ? lcs[i + 1]![j + 1]! + 1
+        : Math.max(lcs[i + 1]![j]!, lcs[i]![j + 1]!);
+    }
+  }
+  type Op = { kind: " " | "-" | "+"; text: string };
+  const ops: Op[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (beforeLines[i] === afterLines[j]) {
+      ops.push({ kind: " ", text: beforeLines[i]! }); i += 1; j += 1;
+    } else if (lcs[i + 1]![j]! >= lcs[i]![j + 1]!) {
+      ops.push({ kind: "-", text: beforeLines[i]! }); i += 1;
+    } else {
+      ops.push({ kind: "+", text: afterLines[j]! }); j += 1;
+    }
+  }
+  while (i < n) { ops.push({ kind: "-", text: beforeLines[i]! }); i += 1; }
+  while (j < m) { ops.push({ kind: "+", text: afterLines[j]! }); j += 1; }
+
+  // Hunks: keep CONTEXT unchanged lines around changes, fold the rest.
+  const CONTEXT = 2;
+  const keep = new Array<boolean>(ops.length).fill(false);
+  ops.forEach((op, idx) => {
+    if (op.kind !== " ") {
+      for (let k = Math.max(0, idx - CONTEXT); k <= Math.min(ops.length - 1, idx + CONTEXT); k += 1) {
+        keep[k] = true;
+      }
+    }
+  });
+  const out = [...header];
+  let folded = 0;
+  const flushFold = () => {
+    if (folded > 0) {
+      out.push(`\u00b7\u00b7\u00b7 ${folded} unchanged line${folded === 1 ? "" : "s"} \u00b7\u00b7\u00b7`);
+      folded = 0;
+    }
+  };
+  ops.forEach((op, idx) => {
+    if (op.kind === " " && !keep[idx]) {
+      folded += 1;
+      return;
+    }
+    flushFold();
+    out.push(`${op.kind === " " ? " " : op.kind}${op.text}`);
+  });
+  flushFold();
   return `${out.join("\n")}\n`;
 }
+
 
 export async function confirmAndWrite(configPath: string, before: string | null, after: string): Promise<void> {
   process.stdout.write(renderDiff(before, after, configPath));
@@ -127,7 +175,15 @@ export async function confirmAndWrite(configPath: string, before: string | null,
   }
 
   const readline = createInterface({ input: process.stdin, output: process.stdout });
-  const answer = await readline.question("Apply? [y/N] ");
+  let answer = "";
+  for (;;) {
+    answer = await readline.question("Apply? [y/N, v to view the full result] ");
+    if (answer === "v" || answer === "V") {
+      process.stdout.write(`\n--- full resulting ${configPath} ---\n${after}\n`);
+      continue;
+    }
+    break;
+  }
   readline.close();
 
   if (answer !== "y" && answer !== "Y") {
