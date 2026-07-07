@@ -69,7 +69,7 @@ test("--print-config prints Codex config.toml hooks for supported events", async
   assert.match(result.stdout, /SessionStart = \[/);
   assert.match(result.stdout, /UserPromptSubmit = \[/);
   assert.match(result.stdout, /PreToolUse = \[/);
-  assert.match(result.stdout, /PostToolUse = \[/);
+  assert.doesNotMatch(result.stdout, /PostToolUse/); // only processed events are configured (audit 2026-07-07)
   assert.match(result.stdout, /Stop = \[/);
   assert.match(result.stdout, /matcher = "\*"/);
   assert.match(result.stdout, /type = "command"/);
