@@ -157,3 +157,8 @@ things we will never add.
 
 Sidelight is free and open source. If it helps your workflow, you can support
 development at [ko-fi.com/annbjer](https://ko-fi.com/annbjer).
+
+## The story
+
+How (and why) sidelight was built — one human, three AIs, one hot July weekend:
+[annbjer.com/articles/sidelight-the-visibility-layer-my-terminal-was-missing](https://www.annbjer.com/articles/sidelight-the-visibility-layer-my-terminal-was-missing/)
