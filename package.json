@@ -58,7 +58,8 @@
     "extensions": [
       "./extension"
     ],
-    "image": "https://raw.githubusercontent.com/annbjer/sidelight/main/assets/1-hero-dark.png"
+    "image": "https://raw.githubusercontent.com/annbjer/sidelight/main/assets/1-hero-dark.png",
+    "video": "https://blog-media.annbjer.studio/articles/sidelight/sidelight-demo-2x.mp4"
   },
   "funding": {
     "type": "ko-fi",
