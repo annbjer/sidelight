@@ -1,8 +1,8 @@
 # sidelight
 
 Read-only project-awareness TUI for a terminal split pane beside your AI coding agent —
-[PI](https://pi.dev), Claude Code, or Codex. Local-only: no network, no telemetry, the
-sidecar never writes, and it only ever spawns `git`.
+[PI](https://pi.dev), Claude Code, or Codex. Runs entirely locally: no network, no telemetry,
+the sidecar never writes, and it only ever spawns `git`.
 
 
 **Why:** full visibility into the project you're working on — and transparency into
