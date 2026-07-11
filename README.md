@@ -14,6 +14,10 @@ access to your code.
   <img alt="sidelight running in a Ghostty split beside a PI session: file tree on the left, the agent describing the project on the right" src="assets/1-hero-light.png">
 </picture>
 
+## One-minute demo
+
+https://github.com/user-attachments/assets/4ac23c1e-cb85-44ad-87cc-5382e5d32ca3
+
 ## Install
 
 From [npm](https://www.npmjs.com/package/sidelight):
